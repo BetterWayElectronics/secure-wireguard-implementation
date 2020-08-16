@@ -440,7 +440,7 @@ following commands:
 
 -   `sudo iptables -A INPUT -p tcp --dport 2222 -j ACCEPT`
 
--   `-sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT`
+-   `sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT`
 
 I tested its functionality by running it with `python xsweet.py` and
 opening an SSH connection on port 22 to my server. It indeed functioned,
