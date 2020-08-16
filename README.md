@@ -256,37 +256,26 @@ modify the default configuration at `/etc/unbound/unbound.conf`.
 
 I recommend these settings as it gives access to the DNS only to you and
 WireGuard and it forwards
-
 the requests through to the DNSCrypt service in the forward-zone. Now
 the next thing to install is
-
 DNSCrypt-Proxy itself. Start by picking an installation directory (I
 chose just the home directory) and
-
 then run `wget https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/2.0.42/dnscrypt-proxy-linux_x86_64-2.0.42.tar.gz`.
 Extract it with `tar -xvf dnscrypt-proxy-linux_x86_64-2.tar.gz
-
 dnscrypt-proxy`. Enter the extracted directory and copy the example
 configuration with `cp example-
-
 dnscrypt-proxy.toml dnscrypt-proxy.toml`. Now run the service in a new
 terminal window with
-
 `./dnscrypt-proxy` to ensure its functionality. At this stage you need
 to modify your systems default
-
 resolve file, but first back it up with `cp /etc/resolv.conf
 /etc/resolv.conf.backup` then delete it and
-
 make a new one and insert `nameserver 127.0.0.1` and `options edns0`.
 Your system will likely try
-
 and revert these settings so lock the file with `chattr +i
 /etc/resolv.conf`, note that the `--i` switch will
-
 unlock it. Now it's best to close the other terminal session that has
 DNSCrypt running and begin
-
 modifying the configuration file, `dnscrypt-proxy.toml`.
 
 ![](media/image17.jpeg)
@@ -315,55 +304,35 @@ public key`.
 From this point on you can cheat by going to
 https://wireguardconfig.com/ and
 using a generated
-
 configuration. But is not that difficult to set it up yourself, start
 with creating the following file
-
 `/etc/wireguard/wg0.conf` and adding your own private key and a client's
 public key to the following
-
 configuration in the image below. Then save it and modify its
 permissions with `chmod 600
-
 /etc/wireguard/wg0.conf`. Then remember to delete the keys you have
 generated earlier.
-
 Subsequent clients are added below each other with the same formatting,
 to then remove a user
-
 you issue `wg set wg0 peer PUBLICKEY remove` or modify the wg0.conf
 manually. To load a
-
 configuration (to add another client for example) without resetting the
-service run `wg addconf wg0
-
-<(wg-quick strip wg0)`.
+service run `wg addconf wg0 (wg-quick strip wg0)`.
 
 ![](media/image18.jpeg)
 
 Now ensure that your system can accommodate IP forwarding by editing
 `/etc/sysctl.conf` and adding `net.ipv4.ip_forwarding=1` and
-`net.ipv6.conf.all.forwarding=1`. Once this is done run `sysctl
-
---p` to load your newly edited configuration. Now you can finally start
+`net.ipv6.conf.all.forwarding=1`. Once this is done run `sysctl --p` to load your newly edited configuration. Now you can finally start
 WireGuard with `wg-quick up wg0` and confirm its running with `wg show
 all`.
 
 ![](media/image19.jpeg)
 
 Connect to the VPS via WireGuard to finally confirm that you are indeed
-part of the server's LAN,
-
-this is important for a final security measure. If all is well make
-WireGuard start at boot with
-
-`systemctl enable wg-quick@wg0`. You can confirm that there is indeed
-encrypting traffic by issuing
-
-`tcpdump --n --X --I eth0 host YOURSERVERIP` and looking for WireGuard's
-magic header identifier in
-
-each packet `0400 0000`.
+part of the server's LAN, this is important for a final security measure. If all is well make
+WireGuard start at boot with `systemctl enable wg-quick@wg0`. You can confirm that there is indeed
+encrypting traffic by issuing `tcpdump --n --X --I eth0 host YOURSERVERIP` and looking for WireGuard's magic header identifier in each packet `0400 0000`.
 
 ![](media/image20.jpeg)
 
@@ -483,8 +452,7 @@ the actual honeypot and these were as follows:
 -   `sudo pip install bcrypt`
 
 Once this was done I cloned the git repository of XSweet, the SSH
-Honeypot. This was done with the command `git clone
-https://github.com/techouss/xsweet.git`.
+Honeypot. This was done with the command `git clone https://github.com/techouss/xsweet.git`.
 I did this within the home directory as I felt this would be an adequate
 location, given this is also where I installed DNSCrypt. Now to run this
 on port 22 I had to open it along with port 2222, the actual port that
@@ -492,8 +460,7 @@ the honeypot will be running on. I then had to forward 22 to 2222 to
 ensure that the honeypot would function. This was done with the
 following commands:
 
--   `sudo iptables -A PREROUTING -t nat -p tcp --dport 22 -j REDIRECT
-    > --to-port 2222`
+-   `sudo iptables -A PREROUTING -t nat -p tcp --dport 22 -j REDIRECT --to-port 2222`
 
 -   `sudo iptables -A INPUT -p tcp --dport 2222 -j ACCEPT`
 
