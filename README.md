@@ -33,14 +33,10 @@ distribute among peers.
 ![](media/image3.jpeg)
 
 To start this project you need your own virtual private server (VPS), I
-recommend OVHcloud
-
-https://ovh.com.au/ and their cheapest
+recommend OVHcloud https://ovh.com.au/ and their cheapest
 starter package which is $5.00AUD a month. You get 2 GB of memory which
 is more than enough to host multiple clients on the VPN. Once paid for
-you will
-
-receive your IP address, username and password which you'll use to
+you will receive your IP address, username and password which you'll use to
 connect to the server. Be sure to issue `apt update` and `apt upgrade`
 and do this regularly. I also recommend changing the password that they
 give you and securing your account in the method you prefer.
@@ -114,8 +110,7 @@ compatibility be sure to click on the conversions option and select
 export what you have generated as OpenSSH key, again without a password.
 How you have to upload the public key to the VPS. This can be achieved
 using PuTTY's SCP tool by issuing the following command from the Windows
-console `pscp c:\documents\authorized_keys
-debian@example.com:/home/debian/.ssh`.
+console `pscp c:\documents\authorized_keys debian@example.com:/home/debian/.ssh`.
 Now in order to connect from Windows using PuTTY you have to select the
 private key from within the application.
 
@@ -197,10 +192,9 @@ appropriate set of iptables. Creating this is an iterative process,
 adding rules, testing them and eventually getting to the point where
 your default policy can be DROP (even for output, if you want to be
 enthusiastic). The following is a list of iptables I had created for
-this project, note that port 88 (my SSH port) is not
-
-included, this is because the rules are now handled by the knockd
-service, assuming you have set it up properly and it is functional.
+this project, note that port 88 (my SSH port) is not included, this is 
+because the rules are now handled by the knockd service, assuming you 
+have set it up properly and it is functional.
 
 ![](media/image13.jpeg)
 
@@ -246,37 +240,28 @@ thus far.
 Unbound DNS, installing this on the VPS allows full ownership over DNS
 traffic and can allow us to also install DNSCrypt which will in turn
 facilitate DNSSEC and encrypted DNS traffic. Start by issuing the
-following commands `apt-get install unbound unbound-host` and `curl --o
-/var/lib/unbound/root.hints
-https://www.internic.net/domain/named.cache`
+following commands `apt-get install unbound unbound-host` and 
+`curl --o /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache`
 this will give you the latest DNS servers available to you. Now you must
 modify the default configuration at `/etc/unbound/unbound.conf`.
 
 ![](media/image16.jpeg)
 
 I recommend these settings as it gives access to the DNS only to you and
-WireGuard and it forwards
-the requests through to the DNSCrypt service in the forward-zone. Now
-the next thing to install is
-DNSCrypt-Proxy itself. Start by picking an installation directory (I
-chose just the home directory) and
-then run `wget https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/2.0.42/dnscrypt-proxy-linux_x86_64-2.0.42.tar.gz`.
-Extract it with `tar -xvf dnscrypt-proxy-linux_x86_64-2.tar.gz
-dnscrypt-proxy`. Enter the extracted directory and copy the example
-configuration with `cp example-
-dnscrypt-proxy.toml dnscrypt-proxy.toml`. Now run the service in a new
-terminal window with
-`./dnscrypt-proxy` to ensure its functionality. At this stage you need
-to modify your systems default
-resolve file, but first back it up with `cp /etc/resolv.conf
-/etc/resolv.conf.backup` then delete it and
-make a new one and insert `nameserver 127.0.0.1` and `options edns0`.
-Your system will likely try
-and revert these settings so lock the file with `chattr +i
-/etc/resolv.conf`, note that the `--i` switch will
-unlock it. Now it's best to close the other terminal session that has
-DNSCrypt running and begin
-modifying the configuration file, `dnscrypt-proxy.toml`.
+WireGuard and it forwards the requests through to the DNSCrypt service in 
+the forward-zone. Now the next thing to install is DNSCrypt-Proxy itself. 
+Start by picking an installation directory (I chose just the home directory) 
+and then run `wget https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/2.0.42/dnscrypt-proxy-linux_x86_64-2.0.42.tar.gz`.
+Extract it with `tar -xvf dnscrypt-proxy-linux_x86_64-2.tar.gz dnscrypt-proxy`. 
+Enter the extracted directory and copy the example configuration with `cp example-dnscrypt-proxy.toml dnscrypt-proxy.toml`. 
+Now run the service in a new terminal window with `./dnscrypt-proxy` to ensure 
+its functionality. At this stage  you need to modify your systems default resolve 
+file, but first back it up  with `cp /etc/resolv.conf /etc/resolv.conf.backup` then 
+delete it and make a new one and insert `nameserver 127.0.0.1` and `options edns0`.
+Your system will likely try and revert these settings so lock the file with 
+`chattr +i /etc/resolv.conf`, note that the `--i` switch will unlock it. 
+Now it's best to close the other terminal session that has DNSCrypt running 
+and begin modifying the configuration file, `dnscrypt-proxy.toml`.
 
 ![](media/image17.jpeg)
 
@@ -301,31 +286,24 @@ the owner is able to read or execute newly-created files. Now the actual
 key generation, issue `wg genkey | tee privatekey | wg pubkey >
 public key`.
 
-From this point on you can cheat by going to
-https://wireguardconfig.com/ and
-using a generated
-configuration. But is not that difficult to set it up yourself, start
-with creating the following file
-`/etc/wireguard/wg0.conf` and adding your own private key and a client's
-public key to the following
-configuration in the image below. Then save it and modify its
-permissions with `chmod 600
-/etc/wireguard/wg0.conf`. Then remember to delete the keys you have
-generated earlier.
-Subsequent clients are added below each other with the same formatting,
-to then remove a user
-you issue `wg set wg0 peer PUBLICKEY remove` or modify the wg0.conf
-manually. To load a
+From this point on you can cheat by going to https://wireguardconfig.com/ and
+using a generated configuration. But is not that difficult to set it up yourself, 
+start with creating the following file `/etc/wireguard/wg0.conf` and adding your 
+own private key and a client's public key to the following configuration in the 
+image below. Then save it and modify its permissions with `chmod 600 /etc/wireguard/wg0.conf`. 
+Then remember to delete the keys you have generated earlier. Subsequent clients are 
+added below each other with the same formatting, to then remove a user you issue 
+`wg set wg0 peer PUBLICKEY remove` or modify the wg0.conf manually. To load a
 configuration (to add another client for example) without resetting the
 service run `wg addconf wg0 (wg-quick strip wg0)`.
 
 ![](media/image18.jpeg)
 
 Now ensure that your system can accommodate IP forwarding by editing
-`/etc/sysctl.conf` and adding `net.ipv4.ip_forwarding=1` and
-`net.ipv6.conf.all.forwarding=1`. Once this is done run `sysctl --p` to load your newly edited configuration. Now you can finally start
-WireGuard with `wg-quick up wg0` and confirm its running with `wg show
-all`.
+`/etc/sysctl.conf` and adding `net.ipv4.ip_forwarding=1` and `net.ipv6.conf.all.forwarding=1`. 
+Once this is done run `sysctl --p` to load your newly edited configuration. 
+Now you can finally start WireGuard with `wg-quick up wg0` and confirm its running with 
+`wg showall`.
 
 ![](media/image19.jpeg)
 
