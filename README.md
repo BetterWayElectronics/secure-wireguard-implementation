@@ -35,7 +35,7 @@ distribute among peers.
 To start this project you need your own virtual private server (VPS), I
 recommend OVHcloud
 
-[([https://ovh.com.au]{.ul})](https://ovh.com.au/) and their cheapest
+https://ovh.com.au/ and their cheapest
 starter package which is $5.00AUD a month. You get 2 GB of memory which
 is more than enough to host multiple clients on the VPN. Once paid for
 you will
@@ -313,7 +313,7 @@ key generation, issue `wg genkey | tee privatekey | wg pubkey >
 public key`.
 
 From this point on you can cheat by going to
-[[https://wireguardconfig.com/]{.ul}](https://wireguardconfig.com/) and
+https://wireguardconfig.com/ and
 using a generated
 
 configuration. But is not that difficult to set it up yourself, start
