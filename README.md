@@ -360,9 +360,7 @@ Port knocking is great, but why allow anybody from any IP address to
 knock at all? Why not limit the knocks to those already on the WireGuard
 network, this way you can ensure that only those you can trust can even
 begin the knocking process. This is achieved by simply modifying the
-knockd
-
-configuration file, as per above, but changing the interface to wg0.
+knockd configuration file, as per above, but changing the interface to wg0.
 This is done by simply adding `interface = wg0` in the options section.
 If you wanted to be even more paranoid, you could set up an additional
 WireGuard interface specifically to access SSH and use that as the
