@@ -407,7 +407,7 @@ the actual honeypot and these were as follows:
 
 -   `sudo apt-get install default-jre`
 
--   `sudo pip install \--upgrade pip`
+-   `sudo pip install --upgrade pip`
 
 -   `sudo pip install setuptools`
 
