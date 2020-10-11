@@ -1,6 +1,6 @@
-## A Guide On WireGuard/DNSCrypt/SSH/Honeypot Implementation on OVH
+# A Guide On WireGuard/DNSCrypt/SSH/Honeypot Implementation on OVH #
 
-**Introduction**
+### Introduction ###
 
 The plan in this guide is to create a secure WireGuard VPN which has its
 own embedded DNSCrypt DNS resolver, this ensures that all connections
@@ -28,7 +28,7 @@ distribute among peers.
 
 ![](media/image2.png)
 
-**Buying and setting up the VPS**
+### Buying and setting up the VPS ###
 
 ![](media/image3.jpeg)
 
@@ -84,7 +84,7 @@ f2b-sshd`.
 
 ![](media/image6.jpeg)
 
-**Password-free Entry (Windows)**
+### Password-free Entry (Windows) ###
 
 The next step is to be able to login to the VPS without a password or
 even a password prompt (although this is optional), thus we would need
@@ -125,7 +125,7 @@ following message instead.
 
 ![](media/image9.jpeg)
 
-**Password-free Entry (Linux)**
+### Password-free Entry (Linux) ###
 
 Should you want to do the key generation from Linux and login from Linux
 the following steps must be done. This can be done either on the server
@@ -142,7 +142,7 @@ files can be achieved through SCP much like with PuTTY. Change the
 permission of the id_rsa file with `chmod id_rsa 700`. You can then
 access the server with `ssh SERVERIP --p SSHPORT`.
 
-**Port Knocking**
+### Port Knocking ###
 
 Now it's time to setup port knocking. This will ensure that along with a
 different SSH port number, it will remain blocked in the iptables (to be
@@ -183,7 +183,7 @@ cannot login you still can via the KVM console.
 
 ![](media/image11.jpeg)
 
-**IP Tables**
+### IP Tables ###
 
 ![](media/image12.jpeg)
 
@@ -211,7 +211,7 @@ functionality. Once you have a functional iptables it is best to make
 them persistent by running the following commands `apt-get install
 iptables-persistent` and `systemctl start iptables-persistent`.
 
-**Host Provided Firewall/DDoS Mitigation**
+### Host Provided Firewall/DDoS Mitigation ###
 
 ![](media/image14.jpeg)
 
@@ -235,7 +235,7 @@ single port as it will become the port for the VPN, DNS and SSH. Though
 if I need to I could also enable the DNS port, but I have not needed to
 thus far.
 
-**Unbound DNS & DNSCrypt**
+## Unbound DNS & DNSCrypt ##
 
 Unbound DNS, installing this on the VPS allows full ownership over DNS
 traffic and can allow us to also install DNSCrypt which will in turn
@@ -275,7 +275,7 @@ the DNSCrypt in another window again but with the following command
 safe to install DNSCrypt as a service with the command `./dnscrypt-proxy
 -service install`.
 
-**WireGuard**
+## WireGuard ##
 
 Now to finally install WireGuard, this is achieved by issuing `apt-get
 install wireguard`. Ensure the service is installed and running by
@@ -314,7 +314,7 @@ encrypting traffic by issuing `tcpdump --n --X --I eth0 host YOURSERVERIP` and l
 
 ![](media/image20.jpeg)
 
-**Windows Client Side Setup**
+### Windows Client Side Setup ###
 
 Running the official WireGuard client for Windows, you are able to
 create a new tunnel with a few clicks. Within the client click on the
@@ -328,7 +328,7 @@ Use this information to build your client configuration as per the
 second screenshot above. Once this is done, click `Activate` and you
 will be connected!
 
-**Linux Client Side Setup**
+### Linux Client Side Setup ###
 
 From the client's perspective setting up WireGuard is very similar, it
 starts with the following commands 'apt install wireguard resolvconf' to
@@ -352,9 +352,9 @@ then ensure that your system can accommodate IP forwarding by editing
 `wg-quick up wg0` and confirm its running with `wg show` and finally, to
 ensure it starts at boot run `systemctl enable wg-quick@wg0`.
 
-**Additional Security Post Installation**
+## Additional Security Post Installation ##
 
-**SSH via WireGuard (With Knocking)**
+### SSH via WireGuard (With Knocking) ###
 
 Port knocking is great, but why allow anybody from any IP address to
 knock at all? Why not limit the knocks to those already on the WireGuard
@@ -368,7 +368,7 @@ knocking interface, this would allow sharing of the WireGuard VPN access
 but also ensuring your own secure access on a different interface and IP
 address, solely for SSH.
 
-**Connection Profiling**
+### Connection Profiling ###
 
 To hide the fact, or at least aid in the fact you are using a VPN/Tunnel
 and also to ensure that the connection between the VPS's eth0 interface
@@ -380,16 +380,17 @@ be possible for it to know that you are indeed on a tunnel of sorts.
 Changing the wg0 interface MTU to 1500 will match the eth0, masking its
 identity and also ensuring that the UDP packets do not become fragmented
 given that they will both share the same maximum. This can be done by
-issuing the command 'ifconfig wg0 mtu 1500 up' and can then be confirmed
-with `netstat --i`. It can be made permanent by adding the MTU value
-within the interfaces file.
+issuing the command `ifconfig wg0 mtu 1500 up` and can then be confirmed
+with `netstat -i`. It can be made permanent by adding the MTU value
+within the interfaces file. Remember to change this value in the config
+file of your client.
 
 ![](media/image23.jpeg)
 
 
 ![](media/image24.jpeg)
 
-**SSH Honeypot**
+### SSH Honeypot ###
 
 I decided to install a medium interaction SSH honeypot as this service
 will likely be a target for hackers and I was curious to see the
@@ -465,7 +466,7 @@ interaction and false outputs, of which are recorded. This would also
 include files that are uploaded/downloaded to the server, this way you
 can forensically examine potential malware/payloads etc.
 
-**Other Considerations**
+## Other Considerations ##
 
 You must be aware of the Autonomous System Number (ASN) that is assigned
 to your server IP address when you buy your VPS. Mine for example is
@@ -486,3 +487,54 @@ a commercial VPN provider, where allocated shared IPs can be banned in
 global black lists due to spamming and other illegal activity. My ASN is
 also not part of the Spamhaus Project ASN-DROP list; if it were then I
 would certainly not continue using my hosting provider.
+
+## Troubleshooting ##
+
+During my time with this setup I have found and discovered various small issues, 
+here are my quick fixes for them.
+
+### Wireguard Cannot Compile ###
+
+In `/usr/src/wireguard-1.0.20200623/socket.c` add these two lines after the #include's:
+
+-   `#undef ipv6_dst_lookup_flow`
+-   `#define ipv6_dst_lookup_flow(a, b, c, d) ipv6_dst_lookup(a, b, &dst, c) + (void *)0 ?: dst`
+
+Now as root run `/usr/lib/dkms/dkms_autoinstaller start`
+
+If this does not work read the following and follow it `https://www.wireguard.com/compilation/`
+
+Now emove lines 95, 96, 97 and 99 from `compat.h`
+Compile and install as per the official guide
+
+### Knockd Not Starting at Boot ###
+
+Confirm the issue with `systemctl is-enabled knockd.service`, if it comes up as `static`
+then edit `/lib/systemd/system/knockd.service` and add this to the bottom:
+
+-   `[Install]`
+-   `WantedBy=multi-user.target`
+-   `Alias=knockd.service`
+
+Run the following: `systemctl enable knockd.service` and `systemctl is-enabled knockd.service`
+it should now come up as `enabled`.
+
+### Unbound Not Starting at Boot ###
+Confirm if port 5353 is not already in use by something else with `lsof -i -P -n | grep LISTEN`
+Kill the PID of whatever is already using that port.
+If it is Avahi you can disable it from booting with the following commands:
+
+-   `systemctl stop avahi-daemon.socket`
+-   `systemctl stop avahi-daemon.service`
+-   `systemctl disable avahi-daemon`
+
+I have found that on boot DNSCrypt will start before Unbound, causing the same issue. 
+Just kill DNSCrypt and start it again after Unbound.
+
+### Websites Timeout Sporatically After Reboot ###
+If you have changed the MTU it likely went back to the default and thus your client side
+settings are not matching, causing dropouts.
+
+If this is not the issue change the wg0 MTU to `1480`.
+Again, ensure that your client matches the MTU settings of the wg0 interface!
+
