@@ -531,10 +531,10 @@ If it is Avahi you can disable it from booting with the following commands:
 I have found that on boot DNSCrypt will start before Unbound, causing the same issue. 
 Just kill DNSCrypt and start it again after Unbound.
 
-### Websites Timeout Sporatically After Reboot ###
+### Some Websites Timeout/Cannot Resolve After Reboot ###
 If you have changed the MTU it likely went back to the default and thus your client side
 settings are not matching, causing dropouts.
 
 If this is not the issue change the wg0 MTU to `1480`.
-Again, ensure that your client matches the MTU settings of the wg0 interface!
+Again, ensure that your client matches the MTU settings of the wg0 interface.
 
