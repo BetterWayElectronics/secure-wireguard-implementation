@@ -268,8 +268,7 @@ and begin modifying the configuration file, `dnscrypt-proxy.toml`.
 This is the configuration that I had used. The server names line can be
 removed, should you do this it will result in the DNSCrypt service
 probing every available server on start-up and determining the fastest
-one based on your location and the rules written below.
-
+one based on your location and the rules written below. Because of this 
 I recommend that you select your own DNS servers, those which suit your needs.
 Visit `https://dnscrypt.info/public-servers/` and select the names of the servers
 add them to the `dnscrypt-proxy.toml` file under `server_names`, for example:
