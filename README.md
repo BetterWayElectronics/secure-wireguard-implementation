@@ -269,11 +269,21 @@ This is the configuration that I had used. The server names line can be
 removed, should you do this it will result in the DNSCrypt service
 probing every available server on start-up and determining the fastest
 one based on your location and the rules written below (I recommend
-this, but you will likely just get Australian servers regardless). Start
-the DNSCrypt in another window again but with the following command
+this, but you will likely just get local servers regardless). 
+
+You should generally select your own DNS servers, those which suit your needs.
+Visit `https://dnscrypt.info/public-servers/` and select the names of the servers
+add them to the `dnscrypt-proxy.toml` file under `server_names`, for example:
+`server_names = ['deffer-dns.au', 'publicarray-au', 'publicarray-au2', 'publicarray-au2-doh', 'publicarray-au-doh', 'cloudfare']`
+
+Start the DNSCrypt in another window again but with the following command
 `./dnscrypt-proxy -resolve google.com` if this succeeded you are now
 safe to install DNSCrypt as a service with the command `./dnscrypt-proxy
 -service install`.
+
+Feel free to make a final confirmation test of the DNS by running
+`nslookup -q=A whoami.akamai.net` and looking at the respondant IP, thats your DNS.
+You can also go to `www.dnsleaktest.com` to see which server/s you're using.
 
 ## WireGuard ##
 
@@ -487,6 +497,17 @@ a commercial VPN provider, where allocated shared IPs can be banned in
 global black lists due to spamming and other illegal activity. My ASN is
 also not part of the Spamhaus Project ASN-DROP list; if it were then I
 would certainly not continue using my hosting provider.
+
+### Logs ###
+I suggest installing `lnav` for log aggregation. But prior to doing this remember
+to change your time-zone with `sudo timedatectl set-timezone your_time_zone`.
+
+If for some reason you do not want logs I suggest running the following commands
+or at least setting them up to run on a schedule in the background:
+
+-   `cat /dev/null > ~/.bash_history`
+-   `for logs in 'find /var/log -type f'; do > $logs; done`
+-   `sudo service rsyslog restart`
 
 ## Troubleshooting ##
 
