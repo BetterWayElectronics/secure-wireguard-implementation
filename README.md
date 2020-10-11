@@ -504,7 +504,7 @@ Now as root run `/usr/lib/dkms/dkms_autoinstaller start`
 
 If this does not work read the following and follow it `https://www.wireguard.com/compilation/`
 
-Now emove lines 95, 96, 97 and 99 from `compat.h`
+Now remove lines 95, 96, 97 and 99 from `compat.h`
 Compile and install as per the official guide
 
 ### Knockd Not Starting at Boot ###
@@ -519,6 +519,9 @@ then edit `/lib/systemd/system/knockd.service` and add this to the bottom:
 Run the following: `systemctl enable knockd.service` and `systemctl is-enabled knockd.service`
 it should now come up as `enabled`.
 
+It may still not start due to the sequence of how things start up, so it may error out saying
+that there is no wg0 interface. If this is the case change the order of services at boot.
+
 ### Unbound Not Starting at Boot ###
 Confirm if port 5353 is not already in use by something else with `lsof -i -P -n | grep LISTEN`
 Kill the PID of whatever is already using that port.
@@ -529,7 +532,7 @@ If it is Avahi you can disable it from booting with the following commands:
 -   `systemctl disable avahi-daemon`
 
 I have found that on boot DNSCrypt will start before Unbound, causing the same issue. 
-Just kill DNSCrypt and start it again after Unbound.
+Just kill DNSCrypt and start it again after Unbound. Or change the order of services at boot.
 
 ### Some Websites Timeout/Cannot Resolve After Reboot ###
 If you have changed the MTU it likely went back to the default and thus your client side
