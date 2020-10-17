@@ -36,7 +36,7 @@ To start this project you need your own virtual private server (VPS), I
 recommend OVHcloud https://ovh.com.au/ and their cheapest
 starter package which is $5.00AUD a month. You get 2 GB of memory which
 is more than enough to host multiple clients on the VPN. You can generally
-choose what operating system you want, or upload your own ISO, buut in this
+choose what operating system you want, or upload your own ISO, but in this
 example I have chosen Debian 10. Once paid for you will receive your IP address, 
 username and password which you'll use to connect to the server. Be sure to issue 
 `apt update` and `apt upgrade` and do this regularly. I also recommend changing
