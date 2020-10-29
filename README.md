@@ -242,7 +242,7 @@ Unbound DNS, installing this on the VPS allows full ownership over DNS
 traffic and can allow us to also install DNSCrypt which will in turn
 facilitate DNSSEC and encrypted DNS traffic. Start by issuing the
 following commands `apt-get install unbound unbound-host` and 
-`curl --o /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache`
+`curl -o /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache`
 this will give you the latest DNS servers available to you. Now you must
 modify the default configuration at `/etc/unbound/unbound.conf`.
 
