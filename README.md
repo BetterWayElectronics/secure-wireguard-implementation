@@ -552,7 +552,8 @@ Run the following: `systemctl enable knockd.service` and `systemctl is-enabled k
 it should now come up as `enabled`.
 
 It may still not start due to the sequence of how things start up, so it may error out saying
-that there is no wg0 interface. If this is the case change the order of services at boot.
+that there is no wg0 interface. If this is the case change the order of services at boot or simply
+put up with the fact you may need to use a KVM to restart it each time you reboot your VPS.
 
 ### Unbound Not Starting at Boot ###
 Confirm if port 5353 is not already in use by something else with `lsof -i -P -n | grep LISTEN`
