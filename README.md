@@ -570,7 +570,7 @@ Just kill DNSCrypt and start it again after Unbound. Or change the order of serv
 Still not working? Okay try running `unbound -d -V` this will give you more information.
 If it says `can't bind socket` or `could not open ports` try running `netstat -patuln | grep 53`.
 If you see `1/init` using port 53 then you need to run `systemctl stop dnscrypt-proxy.socket`
-and then restarting unbound again, then restarting dnscrypt again. This should fix it.
+and then restart unbound and then dnscrypt again. This should fix it.
 
 Still not working? Well I guess systemd is using port 53. You can disable it by running
 `systemctl stop systemd-resolved` and `systemctl disable systemd-resolved`.
