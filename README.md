@@ -1,4 +1,4 @@
-# A Guide On WireGuard/DNSCrypt/SSH/Honeypot Implementation on OVH #
+# A Comprehensive Guide On WireGuard/Unbound/DNSCrypt/SSH/Honeypot Implementation on OVH (Or any other Debian VPS) #
 
 ### Introduction ###
 
@@ -256,11 +256,15 @@ and then run `wget https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/
 Extract it with `tar -xvf dnscrypt-proxy-linux_x86_64-2.tar.gz dnscrypt-proxy`. 
 Enter the extracted directory and copy the example configuration with `cp example-dnscrypt-proxy.toml dnscrypt-proxy.toml`. 
 Now run the service in a new terminal window with `./dnscrypt-proxy` to ensure 
-its functionality. At this stage  you need to modify your systems default resolve 
+its functionality. 
+
+At this stage  you need to modify your systems default resolve 
 file, but first back it up  with `cp /etc/resolv.conf /etc/resolv.conf.backup` then 
 delete it and make a new one and insert `nameserver 127.0.0.1` and `options edns0`.
 Your system will likely try and revert these settings so lock the file with 
-`chattr +i /etc/resolv.conf`, note that the `--i` switch will unlock it. 
+`chattr +i /etc/resolv.conf`, note that the `-i` switch will unlock it. 
+You should also modify `/etc/systemd/resolved.conf` and uncomment or add
+`DNSStubListener=No` this may help prevent port clashing in the future.
 Now it's best to close the other terminal session that has DNSCrypt running 
 and begin modifying the configuration file, `dnscrypt-proxy.toml`.
 
@@ -311,7 +315,7 @@ service run `wg addconf wg0 (wg-quick strip wg0)`.
 
 Now ensure that your system can accommodate IP forwarding by editing
 `/etc/sysctl.conf` and adding `net.ipv4.ip_forwarding=1` and `net.ipv6.conf.all.forwarding=1`. 
-Once this is done run `sysctl --p` to load your newly edited configuration. 
+Once this is done run `sysctl -p` to load your newly edited configuration. 
 Now you can finally start WireGuard with `wg-quick up wg0` and confirm its running with 
 `wg showall`.
 
@@ -320,7 +324,7 @@ Now you can finally start WireGuard with `wg-quick up wg0` and confirm its runni
 Connect to the VPS via WireGuard to finally confirm that you are indeed
 part of the server's LAN, this is important for a final security measure. If all is well make
 WireGuard start at boot with `systemctl enable wg-quick@wg0`. You can confirm that there is indeed
-encrypting traffic by issuing `tcpdump --n --X --I eth0 host YOURSERVERIP` and looking for WireGuard's magic header identifier in each packet `0400 0000`.
+encrypting traffic by issuing `tcpdump -n -X -I eth0 host YOURSERVERIP` and looking for WireGuard's magic header identifier in each packet `0400 0000`.
 
 ![](media/image20.jpeg)
 
@@ -528,6 +532,13 @@ If this does not work read the following and follow it `https://www.wireguard.co
 Now remove lines 95, 96, 97 and 99 from `compat.h`
 Compile and install as per the official guide
 
+### Wireguard Won't Start ###
+
+If you're getting an error like `RTNETLINK Operation Not Supported` when trying to start `wg-quick up wg0` 
+you need to input `sudo modprobe wireguard`. If the resultant answer is something along the lines of 
+`Badprobe: FATAL: Module wireguard not found in directory ...`  then your solution is to run 
+`apt-get install wireguard-dkms wireguard-tools linux-headers-$(uname -r)`.
+
 ### Knockd Not Starting at Boot ###
 
 Confirm the issue with `systemctl is-enabled knockd.service`, if it comes up as `static`
@@ -554,6 +565,12 @@ If it is Avahi you can disable it from booting with the following commands:
 
 I have found that on boot DNSCrypt will start before Unbound, causing the same issue. 
 Just kill DNSCrypt and start it again after Unbound. Or change the order of services at boot.
+
+Still not working? Okay try running `unbound -d -V` this will give you more information.
+If it says `can't bind socket` or `could not open ports` try running `netstat -patuln | grep 53`.
+If you see `1/init` using port 53 then you need to run `systemctl stop dnscrypt-proxy.socket`
+and then restarting unbound again, then restarting dnscrypt again. This should fix it.
+
 
 ### Some Websites Timeout/Cannot Resolve After Reboot ###
 If you have changed the MTU it likely went back to the default and thus your client side
