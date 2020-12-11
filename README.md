@@ -571,6 +571,9 @@ If it says `can't bind socket` or `could not open ports` try running `netstat -p
 If you see `1/init` using port 53 then you need to run `systemctl stop dnscrypt-proxy.socket`
 and then restarting unbound again, then restarting dnscrypt again. This should fix it.
 
+Still not working? Well I guess systemd is using port 53. You can disable it by running
+`systemctl stop systemd-resolved` and `systemctl disable systemd-resolved`.
+You don't really need it given you're using unbound.
 
 ### Some Websites Timeout/Cannot Resolve After Reboot ###
 If you have changed the MTU it likely went back to the default and thus your client side
