@@ -510,7 +510,7 @@ If for some reason you do not want logs I suggest running the following commands
 or at least setting them up to run on a schedule in the background:
 
 -   `cat /dev/null > ~/.bash_history`
--   `for logs in 'find /var/log -type f'; do > $logs; done`
+-   `for logs in ``find /var/log -type f``; do > $logs; done`
 -   `sudo service rsyslog restart`
 
 ## Troubleshooting ##
