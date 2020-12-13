@@ -388,7 +388,15 @@ change the permission of the `/etc/wireguard/` directory with `umask
 077`. Create now your own WireGuard configuration file in
 `/etc/wireguard/wg0.conf` and insert the following.
 
-![](media/image22.jpeg)
+-   `[Interface]`
+-   `PrivateKey = CLIENTPRIVATEKEY`
+-   `ListenPort = 51820`
+-   `Address = 10.0.0.4/24`
+-   `DNS = 10.0.0.1`
+-   `[Peer]`
+-   `Public Key = SERVERPUBLICKEY`
+-   `AllowedIPs = 0.0.0.0/0, ::/0`
+-   `EndPoint = VPSSERVERIP:51820`
 
 The AllowedIPs setting can be changed to permit LAN access or can
 restrict to a specific IP address. Once this is done change the
