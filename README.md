@@ -251,21 +251,20 @@ thus far.
 
 ## DNSCrypt ##
 
-DNSCrypt DNS, installing this on the VPS allows full ownership over DNS
-traffic both for your Wireguard client/s and the local network. Traffic can
-then be forwarded to DNSCrypt which will in turn facilitate DNSSEC and encrypted 
-DNS traffic. Now the next thing to step is to install DNSCrypt-Proxy itself.
+Installing this on the VPS allows full ownership over DNS traffic both for your Wireguard client/s and the local network. 
+Your DNS traffic will be forwarded to DNSCrypt which will in turn facilitate DNSSEC and the encryption of DNS requests. 
+Now the next thing to step is to install `DNSCrypt-Proxy` itself.
 
 You must first add the repositories required for installing either the testing or unstable version
 this is done by running the following two commands.
 
-`echo "deb https://deb.debian.org/debian/ testing main" | sudo tee /etc/apt/sources.list.d/testing.list`
-`echo "deb https://deb.debian.org/debian/ unstable main" | sudo tee /etc/apt/sources.list.d/unstable.list`
+-  `echo "deb https://deb.debian.org/debian/ testing main" | sudo tee /etc/apt/sources.list.d/testing.list`
+-  `echo "deb https://deb.debian.org/debian/ unstable main" | sudo tee /etc/apt/sources.list.d/unstable.list`
 
 You can then choose to install either one, but realistically they will likely be the same. Testing though would
 be your safest bet. I personally find that the stable version is simply too old and ironically unstable.
 
-`sudo apt update && \` and then in the prompt type in `sudo apt install -t testing dnscrypt-proxy`
+Start with `sudo apt update && \` and then in the prompt type in `sudo apt install -t testing dnscrypt-proxy`
 
 It is recommended then to reset.
 
@@ -274,23 +273,26 @@ and modify the `listen_address` line to be `[]`. Essentially you are removing th
 handled by a different service, `dnscrypt-proxy.socket`. 
 
 Now for the rest of the recommended settings:
-`server_names = ['doh-eastas-pi-dns', 'doh.tiarap.org', 'quad9-dnscrypt-ipv4-filter-pri', 'quad9-doh-ipv4-filter-pri', 'doh-eastau-pi-dns', 'adguard-dns-doh']`
+-  `server_names = ['doh-eastas-pi-dns', 'doh.tiarap.org', 'quad9-dnscrypt-ipv4-filter-pri', 'quad9-doh-ipv4-filter-pri', 'doh-eastau-pi-dns', 'adguard-dns-doh']`
+
 This allows for ad blocking DNS servers to be selected and deduced based on their ping. You could also just use regular DNS servers by using the following:
-`server_names = ['deffer-dns.au', 'publicarray-au', 'publicarray-au2', 'publicarray-au2-doh', 'publicarray-au-doh', 'cloudfare']`
+
+-  `server_names = ['deffer-dns.au', 'publicarray-au', 'publicarray-au2', 'publicarray-au2-doh', 'publicarray-au-doh', 'cloudfare']`
+
 Now you're wondering where am I getting these DNS names from? Well you can make your own list from https://dnscrypt.info/public-servers/.
 
-`ipv4_servers = true`
-`ipv6_servers = false`
-`dns_crypt_servers = true`
-`doh_servers = true`
-`require_dnssec = true`
-`require_nolog = true`
-`require_nofilter = false`
-`fallback_resolvers = ['9.9.9.9:53', '8.8.8.8:53']`
+-  `ipv4_servers = true`
+-  `ipv6_servers = false`
+-  `dns_crypt_servers = true`
+-  `doh_servers = true`
+-  `require_dnssec = true`
+-  `require_nolog = true`
+-  `require_nofilter = false`
+-  `fallback_resolvers = ['9.9.9.9:53', '8.8.8.8:53']`
 
 Obviously these settings are not everything, but this is what I recommend you change/add from the default.
 
-Now you need to the aforementioned socket service to point to the correct IP address, so run `sudo nano /lib/systemd/system/dnscrypt-proxy.socket`
+Now you need to the aforementioned `dnscrypt-proxy.socket` service to point to the correct IP address, so run `sudo nano /lib/systemd/system/dnscrypt-proxy.socket`
 and modify `ListenStream` and `ListenDatagram` to be `0.0.0.0:53`. Having it at 0.0.0.0 rather than 127.0.0.1 means that wg0
 will be able to access it. You can point your clients to use this DNS by changing their configuration to point to the DNS of 10.0.0.1.
 
@@ -594,11 +596,11 @@ If it is Avahi you can disable it from booting with the following commands:
 Still not working? 
 If it says `can't bind socket` or `could not open ports` try running `netstat -patuln | grep 53`.
 If you see `1/init` using port 53 then you need to run `systemctl stop dnscrypt-proxy.socket`
-and then restart unbound and then dnscrypt again. This should fix it.
+and then restart dnscrypt again. This should fix it.
 
 Still not working? Well I guess systemd is using port 53. You can disable it by running
 `systemctl stop systemd-resolved` and `systemctl disable systemd-resolved`.
-You don't really need it given you're using unbound.
+You don't really need it given you're using DNSCrypt.
 
 ### Some Websites Timeout/Cannot Resolve After Reboot ###
 If you have changed the MTU it likely went back to the default and thus your client side
