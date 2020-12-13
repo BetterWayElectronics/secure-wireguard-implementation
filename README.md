@@ -186,7 +186,7 @@ cannot login you still can via the KVM console.
 
 ### IP Tables ###
 
-![](media/image12.jpeg)
+![](media/newiptables.jpg)
 
 The next stage, as you can see in the above screenshot is to have
 appropriate set of iptables. Creating this is an iterative process,
@@ -197,20 +197,33 @@ this project, note that port 88 (my SSH port) is not included, this is
 because the rules are now handled by the knockd service, assuming you 
 have set it up properly and it is functional.
 
-![](media/image13.jpeg)
+I really suggest you learn how to do iptables yourself rather than just copying
+what I have below, but ultimately as long as you understand it you should be fine.
+
+`sudo iptables -P INPUT DROP`
+`sudo iptables -P FORWARD DROP`
+`sudo iptables -P OUTPUT ACCEPT`
+`sudo iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT`
+`sudo iptables -A INPUT -s 10.0.0.0/24 -p udp -m udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT`
+`sudo iptables -A INPUT -s 127.0.0.1/32 -p udp -m udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT`
+`sudo iptables -A INPUT -i lo -j ACCEPT`
+`sudo iptables -A INPUT -p udp -m udp --dport 51820 -m conntrack --ctstate NEW -j ACCEPT`
+`sudo iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT`
+`sudo iptables -A FORWARD -i wg0 -j ACCEPT`
+`sudo iptables -A OUTPUT -o lo -j ACCEPT`
 
 The rules are straight forward and somewhat readable. It allows INPUT
 and FORWARD connections which are related and established to continue.
 It allows the UDP connection of WireGuard on port 51820. It allows what
 will become WireGuard's interface ip 10.0.0.1/24 to allow DNS and also
-its interface. It also allows the local host access to port 53 (Unbound
-DNS) and port 5353 (DNSCrypt). All of these services are yet to be
-installed at this point, thus showing the iptables in one go is not
-really descriptive of how it will be implemented. Again, it must be done
-iteratively with each installation of each service to ensure
+its interface. It also allows the local host access to port 53 (DNSCrypt). 
+All of these services are yet to be installed at this point, thus showing the 
+iptables in one go is not really descriptive of how it will be implemented. 
+Again, it must be done iteratively with each installation of each service to ensure
 functionality. Once you have a functional iptables it is best to make
 them persistent by running the following commands `apt-get install
-iptables-persistent` and `systemctl start iptables-persistent`.
+iptables-persistent` and `systemctl start iptables-persistent`. If
+you make any changes run `sudo dpkg-reconfigure iptables-persistent`.
 
 ### Host Provided Firewall/DDoS Mitigation ###
 
@@ -236,54 +249,68 @@ single port as it will become the port for the VPN, DNS and SSH. Though
 if I need to I could also enable the DNS port, but I have not needed to
 thus far.
 
-## Unbound DNS & DNSCrypt ##
+## DNSCrypt ##
 
-Unbound DNS, installing this on the VPS allows full ownership over DNS
+DNSCrypt DNS, installing this on the VPS allows full ownership over DNS
 traffic both for your Wireguard client/s and the local network. Traffic can
 then be forwarded to DNSCrypt which will in turn facilitate DNSSEC and encrypted 
-DNS traffic. Start by issuing the following commands `apt-get install unbound unbound-host` 
-and  `curl -o /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache`
-this will give you the latest DNS servers available to you. Now you must
-modify the default configuration at `/etc/unbound/unbound.conf`.
+DNS traffic. Now the next thing to step is to install DNSCrypt-Proxy itself.
 
-![](media/image16.jpeg)
+You must first add the repositories required for installing either the testing or unstable version
+this is done by running the following two commands.
 
-I recommend these settings as it gives access to the DNS only to you and
-WireGuard and it forwards the requests through to the DNSCrypt service in 
-the forward-zone. Now the next thing to install is DNSCrypt-Proxy itself. 
-Start by picking an installation directory (I chose just the home directory) 
-and then run `wget https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/2.0.42/dnscrypt-proxy-linux_x86_64-2.0.42.tar.gz`.
-Extract it with `tar -xvf dnscrypt-proxy-linux_x86_64-2.tar.gz dnscrypt-proxy`. 
-Enter the extracted directory and copy the example configuration with `cp example-dnscrypt-proxy.toml dnscrypt-proxy.toml`. 
-Now run the service in a new terminal window with `./dnscrypt-proxy` to ensure 
-its functionality. 
+`echo "deb https://deb.debian.org/debian/ testing main" | sudo tee /etc/apt/sources.list.d/testing.list`
+`echo "deb https://deb.debian.org/debian/ unstable main" | sudo tee /etc/apt/sources.list.d/unstable.list`
 
-At this stage  you need to modify your systems default resolve 
-file, but first back it up  with `cp /etc/resolv.conf /etc/resolv.conf.backup` then 
-delete it and make a new one and insert `nameserver 127.0.0.1` and `options edns0`.
+You can then choose to install either one, but realistically they will likely be the same. Testing though would
+be your safest bet. I personally find that the stable version is simply too old and ironically unstable.
+
+`sudo apt update && \` and then in the prompt type in `sudo apt install -t testing dnscrypt-proxy`
+
+It is recommended then to reset.
+
+The next step them is to configure DNSCrypt, first run `nano /etc/dnscrypt-proxy/dnscrypt-proxy.toml`
+and modify the `listen_address` line to be `[]`. Essentially you are removing this because it is
+handled by a different service, `dnscrypt-proxy.socket`. 
+
+Now for the rest of the recommended settings:
+`server_names = ['doh-eastas-pi-dns', 'doh.tiarap.org', 'quad9-dnscrypt-ipv4-filter-pri', 'quad9-doh-ipv4-filter-pri', 'doh-eastau-pi-dns', 'adguard-dns-doh']`
+This allows for ad blocking DNS servers to be selected and deduced based on their ping. You could also just use regular DNS servers by using the following:
+`server_names = ['deffer-dns.au', 'publicarray-au', 'publicarray-au2', 'publicarray-au2-doh', 'publicarray-au-doh', 'cloudfare']`
+Now you're wondering where am I getting these DNS names from? Well you can make your own list from https://dnscrypt.info/public-servers/.
+
+`ipv4_servers = true`
+`ipv6_servers = false`
+`dns_crypt_servers = true`
+`doh_servers = true`
+`require_dnssec = true`
+`require_nolog = true`
+`require_nofilter = false`
+`fallback_resolvers = ['9.9.9.9:53', '8.8.8.8:53']`
+
+Obviously these settings are not everything, but this is what I recommend you change/add from the default.
+
+Now you need to the aforementioned socket service to point to the correct IP address, so run `sudo nano /lib/systemd/system/dnscrypt-proxy.socket`
+and modify `ListenStream` and `ListenDatagram` to be `0.0.0.0:53`. Having it at 0.0.0.0 rather than 127.0.0.1 means that wg0
+will be able to access it. You can point your clients to use this DNS by changing their configuration to point to the DNS of 10.0.0.1.
+
+At this stage  you need to modify your systems default resolve file, but first back it up  
+with `cp /etc/resolv.conf /etc/resolv.conf.backup` then delete it and make a new one and 
+insert `nameserver 127.0.0.1` and `options edns0`.
+
 Your system will likely try and revert these settings so lock the file with 
 `chattr +i /etc/resolv.conf`, note that the `-i` switch will unlock it. 
 You should also modify `/etc/systemd/resolved.conf` and uncomment or add
 `DNSStubListener=No` this may help prevent port clashing in the future.
-Now it's best to close the other terminal session that has DNSCrypt running 
-and begin modifying the configuration file, `dnscrypt-proxy.toml`.
 
-![](media/image17.jpeg)
+Once this is all done, you should restart the service daemon with `systemctl daemon-reload`.
+Now you can restart the DNSCrypt service with `systemctl restart dnscrypt-proxy`.
 
-This is the configuration that I had used. The server names line can be
-removed, should you do this it will result in the DNSCrypt service
-probing every available server on start-up and determining the fastest
-one based on your location and the rules written below. Because of this 
-I recommend that you select your own DNS servers, those which suit your needs.
-Visit `https://dnscrypt.info/public-servers/` and select the names of the servers
-add them to the `dnscrypt-proxy.toml` file under `server_names`, for example:
+Check if its running with `systemctl status dnscrypt-proxy`. If it all went well it should look like this:
 
-`server_names = ['deffer-dns.au', 'publicarray-au', 'publicarray-au2', 'publicarray-au2-doh', 'publicarray-au-doh', 'cloudfare']`
+![](media/dnscryptgood.jpg)
 
-Once the config is complete open DNSCrypt in another window again but with the following command
-`./dnscrypt-proxy -resolve google.com` if this succeeded you are now
-safe to install DNSCrypt as a service with the command `./dnscrypt-proxy
--service install`.
+Now run `sudo dnscrypt-proxy -resolve google.com` if this succeeded you are good to go!
 
 Feel free to make a final confirmation test of the DNS by running
 `nslookup -q=A whoami.akamai.net` and looking at the respondant IP, thats your DNS.
@@ -503,7 +530,7 @@ also not part of the Spamhaus Project ASN-DROP list; if it were then I
 would certainly not continue using my hosting provider.
 
 ### Logs ###
-I suggest installing `lnav` for log aggregation. But prior to doing this remember
+I highly suggest installing `lnav` for log aggregation. But prior to doing this remember
 to change your time-zone with `sudo timedatectl set-timezone your_time_zone`.
 
 If for some reason you do not want logs I suggest running the following commands
@@ -512,16 +539,6 @@ or at least setting them up to run on a schedule in the background:
 -   `cat /dev/null > ~/.bash_history`
 -   `for logs in ``find /var/log -type f``; do > $logs; done`
 -   `sudo service rsyslog restart`
-
-### Don't Want Unbound? ###
-Unbound is used in this guide to serve unencrypted DNS requests for the local network.
-This is useful if you are going to register DHCP leases meaning you can reach clients by their
-hostnames rather than knowning their IP addresses. But upon reflection this is not really
-needed for this type of project. Thus to avoid the steps of installing unbound you can simply 
-just change the `listen_addresses` line within `dnscrypt-proxy.toml` to `0.0.0.0:53`. 
-Given the iptables are already setup to accommodate this, no other changes need to be made. 
-You can then disable unbound with `systemctl stop unbound` and `systemctl disable unbound`. 
-If you have disabled `systemd-resolved`, you do not have to enable it for this to work.
 
 ## Troubleshooting ##
 
@@ -565,19 +582,16 @@ It may still not start due to the sequence of how things start up, so it may err
 that there is no wg0 interface. If this is the case change the order of services at boot or simply
 put up with the fact you may need to use a KVM to restart it each time you reboot your VPS.
 
-### Unbound Not Starting at Boot ###
-Confirm if port 5353 is not already in use by something else with `lsof -i -P -n | grep LISTEN`
+### DNSCrypt Not Starting at Boot (Or at all) ###
+Confirm if port 53 is not already in use by something else with `lsof -i -P -n | grep LISTEN`
 Kill the PID of whatever is already using that port.
 If it is Avahi you can disable it from booting with the following commands:
 
 -   `systemctl stop avahi-daemon.socket`
--   `systemctl stop avahi-daemon.service`
+-   `systemctl stop asystemvahi-daemon.service`
 -   `systemctl disable avahi-daemon`
 
-I have found that on boot DNSCrypt will start before Unbound, causing the same issue. 
-Just kill DNSCrypt and start it again after Unbound. Or change the order of services at boot.
-
-Still not working? Okay try running `unbound -d -V` this will give you more information.
+Still not working? 
 If it says `can't bind socket` or `could not open ports` try running `netstat -patuln | grep 53`.
 If you see `1/init` using port 53 then you need to run `systemctl stop dnscrypt-proxy.socket`
 and then restart unbound and then dnscrypt again. This should fix it.
