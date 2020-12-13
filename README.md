@@ -540,11 +540,34 @@ I highly suggest installing `lnav` for log aggregation. But prior to doing this 
 to change your time-zone with `sudo timedatectl set-timezone your_time_zone`.
 
 If for some reason you do not want logs I suggest running the following commands
-or at least setting them up to run on a schedule in the background:
+or at least setting them up to run on a schedule in the background (see Cron Jobs):
 
 -   `cat /dev/null > ~/.bash_history`
 -   `for logs in ``find /var/log -type f``; do > $logs; done`
 -   `sudo service rsyslog restart`
+
+### Cron Jobs ###
+Cron jobs are tasks that can be set automatically by the system, an example of this
+that is relevant to this project was the need to make the knockd service restart itself
+after the system reboots as well as also changing the wg0 interface MTU.
+
+For this example start with creating a simple bash script, `nano hello.sh`.
+
+-   `#!/bin/bash`
+-   `echo "Starting Knockd and fixing MTU"
+-   `systemctl restart knockd.service`
+-   `sudo ifconfig wg0 mtu 1480`
+-   `echo "Done!"`
+
+Now just save the file and change its attribute to executable with `chmod 700 hello.sh`.
+To have your script run when the system starts up you have to open the crontab editor.
+Do this with `crontab -e`, it will prompt you to choose an editor, go with nano, or option 1.
+Within this page type in `@reboot sleep 60 && /home/wherever/your/script/is/hello.sh`.
+Save and close. Now you have to enable the cron service with `systemctl enable cron.service`.
+You can see your user cron jobs with `crontab -l` and you can see the history of your cronjobs 
+with `systemctl status cron.service` or ideally `sudo grep CRON /var/log/syslog`. And thats that!
+
+Be careful with what you put in these scripts, given its being run as root can easily lead to a lot of drama.
 
 ## Troubleshooting ##
 
