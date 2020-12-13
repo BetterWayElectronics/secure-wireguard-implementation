@@ -1,4 +1,4 @@
-# A Comprehensive Guide On WireGuard/Unbound/DNSCrypt/SSH/Honeypot Implementation on OVH (Or any other Debian VPS) #
+# A Comprehensive Guide On WireGuard/DNSCrypt/SSH/Honeypot Implementation on OVH (Or any other Debian VPS) #
 
 ### Introduction ###
 
