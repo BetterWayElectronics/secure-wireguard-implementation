@@ -200,17 +200,17 @@ have set it up properly and it is functional.
 I really suggest you learn how to do iptables yourself rather than just copying
 what I have below, but ultimately as long as you understand it you should be fine.
 
-`sudo iptables -P INPUT DROP`
-`sudo iptables -P FORWARD DROP`
-`sudo iptables -P OUTPUT ACCEPT`
-`sudo iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT`
-`sudo iptables -A INPUT -s 10.0.0.0/24 -p udp -m udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT`
-`sudo iptables -A INPUT -s 127.0.0.1/32 -p udp -m udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT`
-`sudo iptables -A INPUT -i lo -j ACCEPT`
-`sudo iptables -A INPUT -p udp -m udp --dport 51820 -m conntrack --ctstate NEW -j ACCEPT`
-`sudo iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT`
-`sudo iptables -A FORWARD -i wg0 -j ACCEPT`
-`sudo iptables -A OUTPUT -o lo -j ACCEPT`
+-  `sudo iptables -P INPUT DROP`
+-  `sudo iptables -P FORWARD DROP`
+-  `sudo iptables -P OUTPUT ACCEPT`
+-  `sudo iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT`
+-  `sudo iptables -A INPUT -s 10.0.0.0/24 -p udp -m udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT`
+-  `sudo iptables -A INPUT -s 127.0.0.1/32 -p udp -m udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT`
+-  `sudo iptables -A INPUT -i lo -j ACCEPT`
+-  `sudo iptables -A INPUT -p udp -m udp --dport 51820 -m conntrack --ctstate NEW -j ACCEPT`
+-  `sudo iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT`
+-  `sudo iptables -A FORWARD -i wg0 -j ACCEPT`
+-  `sudo iptables -A OUTPUT -o lo -j ACCEPT`
 
 The rules are straight forward and somewhat readable. It allows INPUT
 and FORWARD connections which are related and established to continue.
@@ -219,6 +219,7 @@ will become WireGuard's interface ip 10.0.0.1/24 to allow DNS and also
 its interface. It also allows the local host access to port 53 (DNSCrypt). 
 All of these services are yet to be installed at this point, thus showing the 
 iptables in one go is not really descriptive of how it will be implemented. 
+
 Again, it must be done iteratively with each installation of each service to ensure
 functionality. Once you have a functional iptables it is best to make
 them persistent by running the following commands `apt-get install
