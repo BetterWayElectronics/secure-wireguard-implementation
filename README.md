@@ -239,10 +239,10 @@ thus far.
 ## Unbound DNS & DNSCrypt ##
 
 Unbound DNS, installing this on the VPS allows full ownership over DNS
-traffic and can allow us to also install DNSCrypt which will in turn
-facilitate DNSSEC and encrypted DNS traffic. Start by issuing the
-following commands `apt-get install unbound unbound-host` and 
-`curl -o /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache`
+traffic both for your Wireguard client/s and the local network. Traffic can
+then be forwarded to DNSCrypt which will in turn facilitate DNSSEC and encrypted 
+DNS traffic. Start by issuing the following commands `apt-get install unbound unbound-host` 
+and  `curl -o /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache`
 this will give you the latest DNS servers available to you. Now you must
 modify the default configuration at `/etc/unbound/unbound.conf`.
 
@@ -404,7 +404,7 @@ file of your client.
 
 ![](media/image24.jpeg)
 
-### SSH Honeypot ###
+### SSH Honeypot (Optional Learning/Investigative Tool) ###
 
 I decided to install a medium interaction SSH honeypot as this service
 will likely be a target for hackers and I was curious to see the
@@ -512,6 +512,16 @@ or at least setting them up to run on a schedule in the background:
 -   `cat /dev/null > ~/.bash_history`
 -   `for logs in ``find /var/log -type f``; do > $logs; done`
 -   `sudo service rsyslog restart`
+
+### Don't Want Unbound? ###
+Unbound is used in this guide to serve unencrypted DNS requests for the local network.
+This is useful if you are going to register DHCP leases meaning you can reach clients by their
+hostnames rather than knowning their IP addresses. But upon reflection this is not really
+needed for this type of project. Thus to avoid the steps of installing unbound you can simply 
+just change the `listen_addresses` line within `dnscrypt-proxy.toml` to `0.0.0.0:53`. 
+Given the iptables are already setup to accommodate this, no other changes need to be made. 
+You can then disable unbound with `systemctl stop unbound` and `systemctl disable unbound`. 
+If you have disabled `systemd-resolved`, you do not have to enable it for this to work.
 
 ## Troubleshooting ##
 
