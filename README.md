@@ -273,7 +273,8 @@ The next step them is to configure DNSCrypt, first run `nano /etc/dnscrypt-proxy
 and modify the `listen_address` line to be `[]`. Essentially you are removing this because it is
 handled by a different service, `dnscrypt-proxy.socket`. 
 
-Now for the rest of the recommended settings:
+Now to add your preferred DNS providers:
+
 -  `server_names = ['doh-eastas-pi-dns', 'doh.tiarap.org', 'quad9-dnscrypt-ipv4-filter-pri', 'quad9-doh-ipv4-filter-pri', 'doh-eastau-pi-dns', 'adguard-dns-doh']`
 
 This allows for ad blocking DNS servers to be selected and deduced based on their ping. You could also just use regular DNS servers by using the following:
@@ -281,6 +282,8 @@ This allows for ad blocking DNS servers to be selected and deduced based on thei
 -  `server_names = ['deffer-dns.au', 'publicarray-au', 'publicarray-au2', 'publicarray-au2-doh', 'publicarray-au-doh', 'cloudfare']`
 
 Now you're wondering where am I getting these DNS names from? Well you can make your own list from https://dnscrypt.info/public-servers/.
+
+The rest of the recommended settings:
 
 -  `ipv4_servers = true`
 -  `ipv6_servers = false`
@@ -299,7 +302,7 @@ will be able to access it. You can point your clients to use this DNS by changin
 
 At this stage  you need to modify your systems default resolve file, but first back it up  
 with `cp /etc/resolv.conf /etc/resolv.conf.backup` then delete it and make a new one and 
-insert `nameserver 127.0.0.1` and `options edns0`.
+insert `nameserver 127.0.0.1` and `options edns0`. You are no longer using your default DNS!
 
 Your system will likely try and revert these settings so lock the file with 
 `chattr +i /etc/resolv.conf`, note that the `-i` switch will unlock it. 
