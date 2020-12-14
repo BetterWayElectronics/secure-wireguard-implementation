@@ -357,7 +357,8 @@ Now you can finally start WireGuard with `wg-quick up wg0` and confirm its runni
 Connect to the VPS via WireGuard to finally confirm that you are indeed
 part of the server's LAN, this is important for a final security measure. If all is well make
 WireGuard start at boot with `systemctl enable wg-quick@wg0`. You can confirm that there is indeed
-encrypting traffic by issuing `tcpdump -n -X -I eth0 host YOURSERVERIP` and looking for WireGuard's magic header identifier in each packet `0400 0000`.
+encrypting traffic by issuing `tcpdump -n -X -I eth0 host YOURSERVERIP` 
+and looking for WireGuard's magic header identifier in each packet `0400 0000`.
 
 ![](media/image20.jpeg)
 
@@ -610,8 +611,8 @@ Run the following: `systemctl enable knockd.service` and `systemctl is-enabled k
 it should now come up as `enabled`.
 
 It may still not start due to the sequence of how things start up, so it may error out saying
-that there is no wg0 interface. If this is the case change the order of services at boot or simply
-put up with the fact you may need to use a KVM to restart it each time you reboot your VPS.
+that there is no wg0 interface. If this is the case you need to make a cron job that restarts it
+after wireguard starts.
 
 ### DNSCrypt Not Starting at Boot (Or at all) ###
 Confirm if port 53 is not already in use by something else with `lsof -i -P -n | grep LISTEN`
