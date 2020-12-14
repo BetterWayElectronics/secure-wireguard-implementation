@@ -296,6 +296,10 @@ The rest of the recommended settings:
 
 Obviously these settings are not everything, but this is what I recommend you change/add from the default.
 
+Now download the relay and public resolvers files, because apparently DNSCrypt does not do it for you:
+-  `wget https://download.dnscrypt.info/dnscrypt-resolvers/v3/relays.md -P /etc/dnscrypt-proxy/`
+-  `wget https://download.dnscrypt.info/dnscrypt-resolvers/v3/public-resolvers.md -P /etc/dnscrypt-proxy/`
+
 Now you need to the aforementioned `dnscrypt-proxy.socket` service to point to the correct IP address, so run `sudo nano /lib/systemd/system/dnscrypt-proxy.socket`
 and modify `ListenStream` and `ListenDatagram` to be `0.0.0.0:53`. Having it at 0.0.0.0 rather than 127.0.0.1 means that wg0
 will be able to access it. You can point your clients to use this DNS by changing their configuration to point to the DNS of 10.0.0.1.
