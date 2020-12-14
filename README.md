@@ -326,6 +326,8 @@ Feel free to make a final confirmation test of the DNS by running
 `nslookup -q=A whoami.akamai.net` and looking at the respondant IP, thats your DNS.
 You can also go to `www.dnsleaktest.com` on your client device to see which server/s you're using.
 
+Another test you can do for the client side is to simply stop the DNSCrypt service, if websites timeout - its working!
+
 ## WireGuard ##
 
 Now to finally install WireGuard, this is achieved by issuing `apt-get
