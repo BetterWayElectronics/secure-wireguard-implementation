@@ -150,7 +150,7 @@ different SSH port number, it will remain blocked in the iptables (to be
 setup next) unless a specific sequence of ports are 'knocked'. Only then
 the iptables will allow the SSH port to be open to the IP address of the
 knocker. So the first step is to simply install the service required
-with the command `apt-get install knocked`. Now before its run its
+with the command `apt-get install knockd`. Now before its run its
 important to modify the default settings, the service even has a
 starting flag hidden away in a different file that must be changed prior
 to being started for the first time. The configuration file is in
