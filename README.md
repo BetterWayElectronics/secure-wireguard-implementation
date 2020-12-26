@@ -78,9 +78,9 @@ eventually. This can be done by modifying the SSH config file at
 change, but I have noticed that fail2ban does not seem to enjoy being
 modified after the fact. If this is the case for you just modify the
 iptables manually. To delete the original rule, find its number with
-`iptables -L -v -n --line-numbers` and deleting it with `iptables --D
+`iptables -L -v -n -line-numbers` and deleting it with `iptables --D
 INPUT #`. Now to add your bespoke SSH port with fail2ban issue the
-following command `iptables -A INPUT -p tcp --dport SSHPORT# -j
+following command `iptables -A INPUT -p tcp -dport SSHPORT# -j
 f2b-sshd`.
 
 ![](media/image6.jpeg)
@@ -141,7 +141,7 @@ your client machine and the public key is stored on the server pursuant
 to the previous steps in the `/home/username/.ssh` folders -- moving the
 files can be achieved through SCP much like with PuTTY. Change the
 permission of the id_rsa file with `chmod id_rsa 700`. You can then
-access the server with `ssh SERVERIP --p SSHPORT`.
+access the server with `ssh SERVERIP -p SSHPORT`.
 
 ### Port Knocking ###
 
@@ -176,7 +176,7 @@ to access the SSH normally. Note that according to the rules, the IP
 that knocked is the IP that will be added to the iptables -- remember to
 be mindful of this. This will be modified again after WireGuard is
 installed. Once this is set up install knockd on another Linux machine
-and issue the command `knock --v IP PORT1 PORT2` to open SSH or for
+and issue the command `knock -v IP PORT1 PORT2` to open SSH or for
 Windows download the application `BwE Port Knocker` (available on my
 GitHub) which I developed for this very write-up. This will be vital to
 getting back into the VPS. Again, should there be a situation where you
