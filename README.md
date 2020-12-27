@@ -38,8 +38,11 @@ starter package which is $5.00AUD a month. You get 2 GB of memory which
 is more than enough to host multiple clients on the VPN. You can generally
 choose what operating system you want, or upload your own ISO, but in this
 example I have chosen Debian 10. Once paid for you will receive your IP address, 
-username and password which you'll use to connect to the server. Be sure to issue 
-`apt update` and `apt upgrade` and do this regularly. I also recommend changing
+username and password which you'll use to connect to the server. This can either be
+via the KVM (so terminal within the browser, or VNC if they've provided it) or directly
+via SSH using the details they've provided.
+
+Be sure to issue `apt update` and `apt upgrade` and do this regularly. I also recommend changing
 the password that they give you and securing your account in the method you prefer.
 
 The first thing to do is to now secure the SSH connection and ultimately
@@ -75,15 +78,28 @@ something else. This will aid in preventing automated bots from scanning
 your VPS, though it would not prevent somebody from discovering it
 eventually. This can be done by modifying the SSH config file at
 `/etc/ssh/sshd_config`. Don't forget to update your fail2ban to suit the
-change, but I have noticed that fail2ban does not seem to enjoy being
+change (and restart it), but I have noticed that fail2ban does not seem to enjoy being
 modified after the fact. If this is the case for you just modify the
 iptables manually. To delete the original rule, find its number with
-`iptables -L -v -n --line-numbers` and deleting it with `iptables --D
+`iptables -L -v -n --line-numbers` and deleting it with `iptables -D
 INPUT #`. Now to add your bespoke SSH port with fail2ban issue the
 following command `iptables -A INPUT -p tcp --dport SSHPORT# -j
 f2b-sshd`.
 
 ![](media/image6.jpeg)
+
+### Who Are You?? ###
+
+Well okay, so you've setup fail2ban and the whole time you've likely been root.
+Well for the next phase you have the choice to continue entirely as root, or make
+a seperate account and sudo root instead. The security implications are for you to
+research, but in my case I have chosen to login to the server not via root, but
+with an account with no sudo access whatsoever. From there I log into root.
+I feel this adds another tiny extra little itsy bitsy layer of protection should my
+keys for SSH be divulged. So what did I do? Well first I changed the default root password
+with `sudo passwd` then I made a new blank user with `sudo adduser debian`. Now I can
+swap between the accounts by issuing the `su` command. So `su debian` or just `su` to get back
+to root. Easy!
 
 ### Password-free Entry (Windows) ###
 
@@ -94,9 +110,10 @@ directly. The first step in achieving this is to disable password
 authentication within the SSH config file, so after modifying the port
 scroll down modify the following two settings `PasswordAuthentication
 no` and `UsePAM no`. At the bottom of the configuration file add the
-following `AuthenticationMethods publickey`. Save the configuration file
-and do not close the current PuTTY session. Worst case scenario you can
-still access your server through the KVM console within the OVH website.
+following `AuthenticationMethods publickey`. If you are not going to log in
+as root, it is important to change the setting here, so comment out `PermitRootLogin`. 
+Save the configuration file but do not close or reset the current PuTTY session as you have not setup the keys! 
+Worst case scenario you can still access your server through the KVM console within the OVH website.
 
 Now the keys need to be generated. Continuing with an example from
 Windows, launch the PuTTY Key Generator and generate the public/private
@@ -109,9 +126,14 @@ will be saved as `authorized_keys` and the private key will be saved with a file
 your choosing (ending in .ppk, the PuTTY format). To ensure future
 compatibility be sure to click on the conversions option and select
 export what you have generated as OpenSSH key, again without a password.
-How you have to upload the public key to the VPS. This can be achieved
+
+Now you have to upload the public key, `authorized_keys`, to the VPS. This can be achieved
 using PuTTY's SCP tool by issuing the following command from the Windows
 console `pscp c:\documents\authorized_keys debian@example.com:/home/debian/.ssh`.
+Or you could simply copy the public key from within the PuTTY Key Generator and paste it.
+This is possible because if you're logged into the servia via PuTTY it will allow you to paste.
+So make the `.ssh` diretory within your user, make an `authorized_keys` file within it and paste!
+
 Now in order to connect from Windows using PuTTY you have to select the
 private key from within the application.
 
@@ -150,7 +172,7 @@ different SSH port number, it will remain blocked in the iptables (to be
 setup next) unless a specific sequence of ports are 'knocked'. Only then
 the iptables will allow the SSH port to be open to the IP address of the
 knocker. So the first step is to simply install the service required
-with the command `apt-get install knocked`. Now before its run its
+with the command `apt-get install knockd`. Now before its run its
 important to modify the default settings, the service even has a
 starting flag hidden away in a different file that must be changed prior
 to being started for the first time. The configuration file is in
@@ -172,10 +194,12 @@ shut, which can be easily forgotten.
 Now access the following file `/etc/default/knockd` and change
 `START_KNOCKD` to `1`. Then start the knockd service by running
 `systemctl start knockd`. From this point onwards you will not be able
-to access the SSH normally. Note that according to the rules, the IP
-that knocked is the IP that will be added to the iptables -- remember to
-be mindful of this. This will be modified again after WireGuard is
-installed. Once this is set up install knockd on another Linux machine
+to access the SSH normally (Well after you've finished setting up IP Tables). 
+Note that according to the rules, the IP that knocked is the IP that will be 
+added to the iptables -- remember to be mindful of this. 
+This will be modified again after WireGuard is installed. 
+
+Once this is set up install knockd on another Linux machine
 and issue the command `knock -v IP PORT1 PORT2` to open SSH or for
 Windows download the application `BwE Port Knocker` (available on my
 GitHub) which I developed for this very write-up. This will be vital to
@@ -199,11 +223,9 @@ have set it up properly and it is functional.
 
 I really suggest you learn how to do iptables yourself rather than just copying
 what I have below, but ultimately as long as you understand it you should be fine.
+It also might be best to do this via the KVM, just in case you lock yourself out of SSH.
 
--  `sudo iptables -P INPUT DROP`
--  `sudo iptables -P FORWARD DROP`
--  `sudo iptables -P OUTPUT ACCEPT`
--  `sudo iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT`
+-  `sudo sudo i--ctstate RELATED,ESTABLISHED -j ACCEPT`
 -  `sudo iptables -A INPUT -s 10.0.0.0/24 -p udp -m udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT`
 -  `sudo iptables -A INPUT -s 127.0.0.1/32 -p udp -m udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT`
 -  `sudo iptables -A INPUT -i lo -j ACCEPT`
@@ -211,6 +233,9 @@ what I have below, but ultimately as long as you understand it you should be fin
 -  `sudo iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT`
 -  `sudo iptables -A FORWARD -i wg0 -j ACCEPT`
 -  `sudo iptables -A OUTPUT -o lo -j ACCEPT`
+-  `sudo iptables -P INPUT DROP`
+-  `sudo iptables -P FORWARD DROP`
+-  `sudo iptables -P OUTPUT ACCEPT`
 
 The rules are straight forward and somewhat readable. It allows INPUT
 and FORWARD connections which are related and established to continue.
@@ -223,7 +248,7 @@ iptables in one go is not really descriptive of how it will be implemented.
 Again, it must be done iteratively with each installation of each service to ensure
 functionality. Once you have a functional iptables it is best to make
 them persistent by running the following commands `apt-get install
-iptables-persistent` and `systemctl start iptables-persistent`. If
+iptables-persistent` and `systemctl start netfilter-persistent.service`. If
 you make any changes run `sudo dpkg-reconfigure iptables-persistent`.
 
 ### Host Provided Firewall/DDoS Mitigation ###
@@ -267,9 +292,9 @@ be your safest bet. I personally find that the stable version is simply too old 
 
 Start with `sudo apt update && \` and then in the prompt type in `sudo apt install -t testing dnscrypt-proxy`
 
-It is recommended then to reset.
+It is recommended then to reset and delete `/etc/apt/sources.list.d/testing.list`.
 
-The next step them is to configure DNSCrypt, first run `nano /etc/dnscrypt-proxy/dnscrypt-proxy.toml`
+The next step then is to configure DNSCrypt, first run `nano /etc/dnscrypt-proxy/dnscrypt-proxy.toml`
 and modify the `listen_address` line to be `[]`. Essentially you are removing this because it is
 handled by a different service, `dnscrypt-proxy.socket`. 
 
@@ -287,7 +312,7 @@ The rest of the recommended settings:
 
 -  `ipv4_servers = true`
 -  `ipv6_servers = false`
--  `dns_crypt_servers = true`
+-  `dnscrypt_servers = true`
 -  `doh_servers = true`
 -  `require_dnssec = true`
 -  `require_nolog = true`
@@ -321,10 +346,13 @@ Check if its running with `systemctl status dnscrypt-proxy`. If it all went well
 ![](media/dnscryptgood.jpg)
 
 Now run `sudo dnscrypt-proxy -resolve google.com` if this succeeded you are good to go!
+If it didn't you probably didn't listen to me when I said restart, so go ahead and `sudo reboot`.
 
 Feel free to make a final confirmation test of the DNS by running
 `nslookup -q=A whoami.akamai.net` and looking at the respondant IP, thats your DNS.
-You can also go to `www.dnsleaktest.com` on your client device to see which server/s you're using.
+Once you have wireguard setup can also go to `www.dnsleaktest.com` on your client device to see which server/s you're using.
+
+Don't have nslookup? `sudo apt install dnstools`, you will likely need this in the future anyhow.
 
 Another test you can do for the client side is to simply stop the DNSCrypt service, if websites timeout - its working!
 
@@ -332,31 +360,47 @@ Another test you can do for the client side is to simply stop the DNSCrypt servi
 
 Now to finally install WireGuard, this is achieved by issuing `apt-get
 install wireguard`. Ensure the service is installed and running by
-issuing `modprobe wireguard` and `lsmod | grep wireguard`. The next
-step is to generate the key pair, but first change the permission of the
+issuing `modprobe wireguard` and `lsmod | grep wireguard`. 
+
+For the latter command you should see something along the lines of:
+-   `wireguard             225280  0`
+-   `ip6_udp_tunnel         16384  1 wireguard`
+-   `udp_tunnel             16384  1 wireguard`
+
+The next step is to generate the key pair, but first change the permission of the
 `/etc/wireguard/` directory with `umask 077`. This will ensure that only
 the owner is able to read or execute newly-created files. Now the actual
-key generation, issue `wg genkey | tee privatekey | wg pubkey >
-public key`.
+key generation, issue `wg genkey | tee privatekey | wg pubkey > publickey`.
 
 From this point on you can cheat by going to https://wireguardconfig.com/ and
 using a generated configuration. But is not that difficult to set it up yourself, 
 start with creating the following file `/etc/wireguard/wg0.conf` and adding your 
 own private key and a client's public key to the following configuration in the 
-image below. Then save it and modify its permissions with `chmod 600 /etc/wireguard/wg0.conf`. 
-Then remember to delete the keys you have generated earlier. Subsequent clients are 
-added below each other with the same formatting, to then remove a user you issue 
-`wg set wg0 peer PUBLICKEY remove` or modify the wg0.conf manually. To load a
+image below (It is best to do both the client and server steps at the same time). 
+Then save it and modify its permissions with `chmod 600 /etc/wireguard/wg0.conf`. 
+
+Subsequent clients are  added below each other with the same formatting, to then remove a user you issue 
+`wg set wg0 peer CLIENTPUBLICKEY remove` or modify the wg0.conf manually. To load a
 configuration (to add another client for example) without resetting the
 service run `wg addconf wg0 (wg-quick strip wg0)`.
 
-![](media/image18.jpeg)
+-   `[Interface]`
+-   `PrivateKey = INSERT YOUR PRIVATE KEY HERE`
+-   `Address = 10.0.0.1/24`
+-   `SaveConfig = true`
+-   `PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE; ip6tables -A FORWARD -i wg0 -j ACCEPT; ip6tables -t nat -A POSTROUTING -o eth0 -j MASQUERADE`
+-   `PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE; ip6tables -D FORWARD -i wg0 -j ACCEPT; ip6tables -t nat -D POSTROUTING -o eth0 -j MASQUERADE`
+-   `ListenPort = 51820`
+
+-   `[Peer]`
+-   `PublicKey = INSERT CLIENT PUBLIC KEY HERE`
+-   `AllowedIPs = 10.0.0.2/32`
 
 Now ensure that your system can accommodate IP forwarding by editing
-`/etc/sysctl.conf` and adding `net.ipv4.ip_forwarding=1` and `net.ipv6.conf.all.forwarding=1`. 
-Once this is done run `sysctl -p` to load your newly edited configuration. 
-Now you can finally start WireGuard with `wg-quick up wg0` and confirm its running with 
-`wg showall`.
+`/etc/sysctl.conf` and adding `net.ipv4.ip_forward=1` and `net.ipv6.conf.all.forwarding=1`. 
+Once this is done run `sudo sysctl -p` to load your newly edited configuration. 
+Now you can finally start WireGuard with `sudo wg-quick up wg0` and confirm its running with 
+`wg show`.
 
 ![](media/image19.jpeg)
 
@@ -428,13 +472,13 @@ To hide the fact, or at least aid in the fact you are using a VPN/Tunnel
 and also to ensure that the connection between the VPS's eth0 interface
 and wg0 interface do not fragment UDP packets I recommend changing the
 Maximum Transmission Units (MTU). As standard, the eth0 interface will
-have an MTU of 1500 and wg0 will have 1420, which is also the default of
+have an MTU of `1500` and wg0 will have `1420`, which is also the default of
 IPSec. Should a website attempt to fingerprint your connection it will
 be possible for it to know that you are indeed on a tunnel of sorts.
-Changing the wg0 interface MTU to 1500 will match the eth0, masking its
+Changing the wg0 interface MTU to `1500` will match the eth0, masking its
 identity and also ensuring that the UDP packets do not become fragmented
 given that they will both share the same maximum. This can be done by
-issuing the command `ifconfig wg0 mtu 1500 up` and can then be confirmed
+issuing the command `sudo ifconfig wg0 mtu 1500 up` and can then be confirmed
 with `netstat -i`. It can be made permanent by adding the MTU value
 within the interfaces file. Remember to change this value in the config
 file of your client.
@@ -583,6 +627,17 @@ Be careful with what you put in these scripts, because they are run as root (dep
 During my time with this setup I have found and discovered various small issues, 
 here are my quick fixes for them.
 
+### Unable to Locate Package: Wireguard? ###
+
+Add these to the bottom of your `/etc/apt/sources.list`
+
+-   `deb  http://deb.debian.org/debian  stretch main`
+-   `deb-src  http://deb.debian.org/debian  stretch main`
+-   `deb http://ftp.debian.org/debian buster-backports main`
+-   `deb-src http://ftp.debian.org/debian buster-backports main`
+
+Then run `apt update`.
+
 ### Wireguard Cannot Compile ###
 
 In `/usr/src/wireguard-1.0.20200623/socket.c` add these two lines after the #include's:
@@ -603,6 +658,12 @@ If you're getting an error like `RTNETLINK Operation Not Supported` when trying 
 you need to input `sudo modprobe wireguard`. If the resultant answer is something along the lines of 
 `Badprobe: FATAL: Module wireguard not found in directory ...`  then your solution is to run 
 `apt-get install wireguard-dkms wireguard-tools linux-headers-$(uname -r)`.
+
+### Knockd Not Opening Port ###
+
+Well if you've not modified the interface for knockd, it could simply be because you're on the VPN.
+Its default settings are to accept knocks from eth0, if you're on the VPN you're on wg0. It won't work.
+If it works when you disconnect from the VPN you should add the wg0 interface into knockd if you prefer accessing it this way.
 
 ### Knockd Not Starting at Boot ###
 
