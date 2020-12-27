@@ -78,9 +78,9 @@ eventually. This can be done by modifying the SSH config file at
 change, but I have noticed that fail2ban does not seem to enjoy being
 modified after the fact. If this is the case for you just modify the
 iptables manually. To delete the original rule, find its number with
-`iptables -L -v -n -line-numbers` and deleting it with `iptables --D
+`iptables -L -v -n --line-numbers` and deleting it with `iptables --D
 INPUT #`. Now to add your bespoke SSH port with fail2ban issue the
-following command `iptables -A INPUT -p tcp -dport SSHPORT# -j
+following command `iptables -A INPUT -p tcp --dport SSHPORT# -j
 f2b-sshd`.
 
 ![](media/image6.jpeg)
