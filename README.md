@@ -396,7 +396,7 @@ Now create the `wg0.conf`:
 Subsequent clients are  added below each other with the same formatting, to then remove a user you issue 
 `wg set wg0 peer CLIENTPUBLICKEY remove` or modify the wg0.conf manually. To load a
 configuration (to add another client for example) without resetting the
-service run `wg addconf wg0 (wg-quick strip wg0)`.
+service run `wg addconf wg0 <(wg-quick strip wg0)`.
 
 Now ensure that your system can accommodate IP forwarding by editing
 `/etc/sysctl.conf` and adding `net.ipv4.ip_forward=1` and `net.ipv6.conf.all.forwarding=1`. 
