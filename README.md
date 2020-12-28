@@ -659,7 +659,7 @@ So start with `nano /etc/wireguard/wg1.conf`. Within that interface file insert 
 -   `FwMark = 51280`
 
 -   `[Peer]`
--   `PublicKey = thepublickeyyoujustmade`
+-   `PublicKey = thepublickeyofVPS2`
 -   `AllowedIPS = 0.0.0.0/0`
 -   `Endpoint = VPS2IPAddress:51820`
 -   `PersistentKeepalive = 21`
@@ -670,7 +670,7 @@ Now edit your VPS1 `wg0` configuration file and add `FwMark = 51820` much like `
 -   `ip route add 0.0.0.0/0 dev gate0 table wg1`
 -   `ip rule add from 10.0.0.0/24 lookup wg1`
 
-Now go into your VPS2 and edit its `wg0` file and add a peer using the VPS1 public key and give it the IP address of `10.0.0.4/32`.
+Now go into your VPS2 and edit its `wg0` file and add a peer using the VPS1 public key (that you made earlier) and give it the IP address of `10.0.0.4/32`.
 
 Restart VPS2's `wg0` either fully with `wg-quick down wg0` and then `wg-quick up wg0` or just simply run `wg addconf wg0 <(wg-quick strip wg0)`.
 VPS2 will now be ready to recieve VPS1, so go back into VPS1 and do the same thing to its `wg0` but also start finally you can start `wg1`.
