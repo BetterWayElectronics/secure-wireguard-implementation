@@ -642,6 +642,44 @@ with `systemctl status cron.service` or ideally `sudo grep CRON /var/log/syslog`
 
 Be careful with what you put in these scripts, because they are run as root (depending on your permissions) they are very powerful.
 
+## Tunneling aka VPN Chain aka Double-VPN ##
+
+OK, so you're confident with this guide and you want to step it up a bit? You want to connect through two VPNs before accessing the internet?
+Well first step is to literally do this guide TWICE, it's surely not that hard at this point, right?
+
+Now you have two VPS servers we will call them VPS1 and VPS2, the first is what you will connect to, the second is what ultimately will be your external IP.
+Thus it will be: `You ---> VPS1 ---> VPS2 ---> Internet`.
+
+On VPS1, create a second wireguard interface, `wg1` and generate a new set of public and private keys with `wg genkey | tee privatekey | wg pubkey > publickey`. 
+So start with `nano /etc/wireguard/wg1.conf`. Within that interface file insert the following (Note, the IP address does not have to be on a different subnet, remember, this interface is essentially another client):
+
+-   `[Interface]`
+-   `Address = 10.0.0.4/24`
+-   `PrivateKey = theprivatekeyyoujustmade`
+-   `FwMark = 51280`
+
+-   `[Peer]`
+-   `PublicKey = thepublickeyyoujustmade`
+-   `AllowedIPS = 0.0.0.0/0`
+-   `Endpoint = VPS2IPAddress:51820`
+-   `PersistentKeepalive = 21`
+
+Now edit your VPS1 `wg0` configuration file and add `FwMark = 51820` much like `wg1` has. Then add these routes using the following commands:
+
+-   `echo "1 wg1" >> /etc/iproute2/rt_tables`
+-   `ip route add 0.0.0.0/0 dev gate0 table wg1`
+-   `ip rule add from 10.0.0.0/24 lookup wg1`
+
+Now go into your VPS2 and edit its `wg0` file and add a peer using the VPS1 public key and give it the IP address of `10.0.0.4/32`.
+
+Restart VPS2's `wg0` either fully with `wg-quick down wg0` and then `wg-quick up wg0` or just simply run `wg addconf wg0 <(wg-quick strip wg0)`.
+VPS2 will now be ready to recieve VPS1, so go back into VPS1 and do the same thing to its `wg0` but also start finally you can start `wg1`.
+
+If all went well VPS1's external IP address will now be that of VPS2. Try it out with `curl whatismyip.akamai.com`.
+
+The client can now connect to VPS1, which will connect through VPS2! Mission Complete! You can also obviously connect to either of them individually still.
+Disabling `wg1` on VPS1 will not cause any issue, the connection will just be as it was before. So you can essentially turn this ability on and off at your will.
+
 ## Troubleshooting ##
 
 During my time with this setup I have found and discovered various small issues, 
