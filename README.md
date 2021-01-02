@@ -691,7 +691,7 @@ The client can now connect to VPS1, which will connect through VPS2! Mission Com
 Disabling `wg1` on VPS1 will not cause any issue, the connection will just be as it was before. So you can essentially turn this ability on and off at your will.
 
 On the topic of turning it on and off at your will, here is a nice and clever method that does not involve you logging into SSH. Just use the `knockd` service!
-Start by editing `/etc/knockd.conf` and adding another item much like how SSH is done, check out this example. Don't forget to restart the service when you're finished editing the config file, you can do that with `systemctl restart knockd.service`.
+Start by editing `/etc/knockd.conf` and adding another item much like how SSH is done, check out this example - note that each and every port is different, if you use the same port the sequence will get broken and it wont work. Don't forget to restart the service when you're finished editing the config file, you can do that with `systemctl restart knockd.service`.
 
 ![](media/wg1knockdconf.png)
 
