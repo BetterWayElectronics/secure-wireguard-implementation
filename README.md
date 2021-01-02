@@ -683,12 +683,12 @@ The client can now connect to VPS1, which will connect through VPS2! Mission Com
 Disabling `wg1` on VPS1 will not cause any issue, the connection will just be as it was before. So you can essentially turn this ability on and off at your will.
 
 On the topic of turning it on and off at your will, here is a nice and clever method that does not involve you logging into SSH. Just use the `knockd` service!
-Start by editing `/etc/knockd.conf` and adding another item much like how SSH is done, check out this example.
+Start by editing `/etc/knockd.conf` and adding another item much like how SSH is done, check out this example. Don't forget to restart the service when you're finished editing the config file, you can do that with `systemctl restart knockd.service`.
 
 ![](media/wg1knockdconf.png)
 
 Basically `knockd` can do more than just enable and disable your SSH port, you can make it do whatever command you wish, so why not use it to toggle your double-vpn!
-Once the ports are knocked you can see in the log `/var/log/knockd.log` the sequence that it did and the command it ran. You can also use this to run sneaky remote-wipe scripts or something if you desired to.
+Once the ports are knocked you can see in the log `/var/log/knockd.log` the sequence that it did and the command it ran. You can use your imagination for what other scripts or commands you could run.
 
 ![](media/wg1knockd.png)
 
