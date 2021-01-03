@@ -496,7 +496,9 @@ address, solely for SSH.
 
 ### Connection Profiling ###
 
-Websites detect your Maximum Transmission Units (MTU) and use that against you, this is a known method to fingerprint connections. Wireguard uses the default MTU of `1420` which is also the default of IPSec. So if a website does not allow VPN connections, this is their point of call. Now what would be your new MTU? It is important to get this value right. You can use websites like http://www.letmecheck.it/mtu-test.php to determine the best one for a particular website/service but I found that `1480` seems best. It will get fingerprinted as a IPIP/SIT tunnel, so a Linux virtual interface - better than IPSec. You can change the MTU on the fly with `sudo ifconfig wg0 mtu 1480 up`. You can check it with `netstat -i` or with `ifconfig`1. You can make the value permanent by adding it to the `wg0.conf` file by simply adding `MTU = 1480` within the interface section. Note you must change the MTU in your client also, else you will experience dropouts. 
+Websites detect your Maximum Transmission Units (MTU) and use that against you, this is a known method to fingerprint connections. Wireguard uses the default MTU of `1420` which is also the default of IPSec. So if a website does not allow VPN connections, this is their point of call. Now what would be your new MTU? It is important to get this value right. You can use websites like http://www.letmecheck.it/mtu-test.php to determine the best one for a particular website/service but I found that `1480` seems best. It will get fingerprinted as a IPIP/SIT tunnel, so a Linux virtual interface - which is better than IPSec. 
+
+To change the MTU on the fly you can simply run `sudo ifconfig wg0 mtu 1480 up`. Confirm it has been changed with `netstat -i` or with `ifconfig`. From here you can make the value permanent by adding it to the `wg0.conf` file by simply adding `MTU = 1480` within the interface section. Note you must change the MTU in your client also, else you will experience dropouts. 
 
 ![](media/image24.jpeg)
 
