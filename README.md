@@ -150,20 +150,13 @@ following message instead.
 
 ### Password-free Entry (Linux) ###
 
-Should you want to do the key generation from Linux and login from Linux
-the following steps must be done. This can be done either on the server
-or on your own Linux machine. After the step of modifying the SSH
-configuration you generate the key pair by running the `ssh-keygen --t
-rsa` command. From here you will be prompted where to save the private
-key, the default of which is acceptable but I suggest saving the file
-name as `authorized_keys`. Enter no password (ultimately your choice).
-It will then prompt you where to save the public key, again the default
-is sufficient. You then need to ensure that the private key is stored on
-your client machine and the public key is stored on the server pursuant
-to the previous steps in the `/home/username/.ssh` folders -- moving the
-files can be achieved through SCP much like with PuTTY. Change the
-permission of the id_rsa file with `chmod id_rsa 700`. You can then
-access the server with `ssh SERVERIP -p SSHPORT`.
+So you want to generate the public and private key for SSH within Linux? Well!
+Either from within the server or on a client Linux machine you must generate the key pair.
+This is done by running `ssh-keygen -t rsa` it will then prompt you for a filename, keep the default of `id_rsa`.
+If you want to go password-free then simply don't enter one and continue.
+It will then generate the private key and the public key, `id_rsa.pub`. Now you have to move this public key to the server, this can be done much like the earlier examples with SCP. Move the key to the directory `home/username/.ssh/` and rename it to `authorized_keys`. Now change its permissions with `chmod 700 authorized_keys`.
+
+Back on the client machine do the same process and move the `id_rsa` into the same folder and change it to the same permission. Now if you've installed knocking, then knock the server, but if you havent simply access the server with `ssh -vvv username@SERVERIP -p SSHPORT`. The `-vvv` will show you any issues you may encounter and will help diagnose any connection issues. If all went well you will have a prompt for the server as the user you logged in as, without a password!
 
 ### Port Knocking ###
 
