@@ -593,6 +593,10 @@ global black lists due to spamming and other illegal activity. My ASN is
 also not part of the Spamhaus Project ASN-DROP list; if it were then I
 would certainly not continue using my hosting provider.
 
+![](media/1005.png)
+
+Your ASN could easily just be banned from websites you're trying to visit, this is though more common with public VPN's as their anonymity allows for abuse and thus for a service to block one IP would be meaningless, so they ban the entire VPN provider, or at least a large range of their servers.
+
 ### Logs ###
 I highly suggest installing `lnav` for log aggregation. But prior to doing this remember
 to change your time-zone with `sudo timedatectl set-timezone your_time_zone`.
