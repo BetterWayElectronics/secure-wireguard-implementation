@@ -660,7 +660,7 @@ Now edit your VPS1 `wg0` configuration file and add `FwMark = 51820` much like `
 Now you must add these routes using the following commands:
 
 -   `echo "1 wg1" >> /etc/iproute2/rt_tables`
--   `ip route add 0.0.0.0/0 dev gate0 table wg1`
+-   `ip route add 0.0.0.0/0 dev wg0 table wg1`
 -   `ip rule add from 10.0.0.0/24 lookup wg1`
 
 Now go into your VPS2 and edit its `wg0` file and add a new peer using VPS1's public key (that you made earlier) and give it the IP address of `10.0.0.4/32` (or whatever matches the configuration you just made).
