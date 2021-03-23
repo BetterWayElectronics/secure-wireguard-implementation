@@ -318,7 +318,7 @@ Now download the relay and public resolvers files, because apparently DNSCrypt d
 -  `wget https://download.dnscrypt.info/dnscrypt-resolvers/v3/relays.md -P /etc/dnscrypt-proxy/`
 -  `wget https://download.dnscrypt.info/dnscrypt-resolvers/v3/public-resolvers.md -P /etc/dnscrypt-proxy/`
 
-Now you need to the aforementioned `dnscrypt-proxy.socket` service to point to the correct IP address, so run `sudo nano /lib/systemd/system/dnscrypt-proxy.socket`
+Now you need to modify the aforementioned `dnscrypt-proxy.socket` service to point to the correct IP address, so run `sudo nano /lib/systemd/system/dnscrypt-proxy.socket`
 and modify `ListenStream` and `ListenDatagram` to be `0.0.0.0:53`. Having it at 0.0.0.0 rather than 127.0.0.1 means that wg0
 will be able to access it. You can point your clients to use this DNS by changing their configuration to point to the DNS of 10.0.0.1.
 
@@ -347,7 +347,7 @@ Once you have wireguard setup can also go to `www.dnsleaktest.com` on your clien
 
 Don't have nslookup? `sudo apt install dnstools`, you will likely need this in the future anyhow.
 
-Another test you can do for the client side is to simply stop the DNSCrypt service, if websites timeout - its working!
+Another test you can do for the client side is to simply stop the DNSCrypt service via `systemctl stop dnscrypt-proxy.service` and `systemctl stop dnscrypt-proxy.socket`, if websites timeout and you can still access `https://1.1.1.1/` then all is well! Start it back up and continue!
 
 ## WireGuard ##
 
