@@ -616,10 +616,13 @@ after the system reboots (due to wireguard starting too late) and fixing the wg0
 For this example start with creating a simple bash script, `nano hello.sh`.
 
 -   `#!/bin/bash`
--   `echo "Starting Knockd and fixing MTU"`
--   `systemctl restart knockd.service`
--   `sudo ifconfig wg0 mtu 1480`
--   `echo "Done!"`
+-   `logger "=== Boot Sequence Quick-Fix ==="`
+-   `sudo wg-quick up wg0`
+-   `sudo ifconfig wg0 mtu 1480 up`
+-   `sudo sysctl net.ipv4.ip_default_ttl=30`
+-   `sudo systemctl restart dnscrypt-proxy`
+-   `sudo systemctl restart knockd.service`
+-   `logger "=== Quick-Fix is Done! ==="`
 
 Now just save the file and change its attribute to executable with `chmod 700 hello.sh`.
 To have your script run when the system starts up you have to open the crontab editor.
