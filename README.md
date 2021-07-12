@@ -718,6 +718,8 @@ Compile and install as per the official guide
 
 ### Wireguard Won't Start ###
 
+![](media/wgfail.png)
+
 If you're getting an error like `RTNETLINK Operation Not Supported` when trying to start `wg-quick up wg0` 
 you need to input `sudo modprobe wireguard`. If the resultant answer is something along the lines of 
 `Badprobe: FATAL: Module wireguard not found in directory ...`  then your solution is to run 
