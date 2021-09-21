@@ -131,7 +131,7 @@ Now you have to upload the public key, `authorized_keys`, to the VPS. This can b
 using PuTTY's SCP tool by issuing the following command from the Windows
 console `pscp c:\documents\authorized_keys debian@example.com:/home/debian/.ssh`.
 Or you could simply copy the public key from within the PuTTY Key Generator and paste it.
-This is possible because if you're logged into the servia via PuTTY it will allow you to paste.
+This is possible because if you're logged into the server via PuTTY it will allow you to paste.
 So make the `.ssh` diretory within your user, make an `authorized_keys` file within it and paste!
 
 Now in order to connect from Windows using PuTTY you have to select the
